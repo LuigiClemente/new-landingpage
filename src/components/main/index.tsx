@@ -1,86 +1,78 @@
-import { ReactCompareSlider, ReactCompareSliderImage } from "react-compare-slider"
-import Cards from "../Cards/Cards"
-import Footer from "../Footer/GreenAnimate"
-import { Scroll } from "../AutoScroll/Scroll"
+"use client"
+// Importing necessary libraries and components
+import React, { useRef, useState } from 'react';
+import { ReactCompareSlider, ReactCompareSliderImage } from 'react-compare-slider';
+import Cards from '../Cards/Cards';
+import Briefs from '../Briefs/Briefs';
+import Footer from '../Footer/Footer';
+import { Scroll } from '../AutoScroll/Scroll';
+import { Navigation } from '../Navigation';
+import { cardsData } from '~/utils/cardsData';
 
 
-export type Props = {
-  title: string
-  description: string
-}
 
-export const Main = ({ title, description }: Props) => {
+export const Main = () => {
+  const [cards, setCards] = useState(cardsData);
+  const selectedCard = cards.find((card) => card.selected);
+  
+  // Using useRef for DOM access
+  const cardsDetailsSection = useRef(null);
+
+  // Function to scroll to a specific ref within the page
+  const scrollToRef = (ref:any) => {
+    if(ref.current) {
+      ref.current.scrollIntoView();
+    }
+  };
+
+  // Function to execute scrolling to the cards details section
+  const executeScroll = () => scrollToRef(cardsDetailsSection);
+
+  // Function to handle card selection
+  const selectCard = (cardId:any) => {
+    const revisedCards = cards.map((card) => ({
+      ...card,
+      selected: card.id === cardId,
+    }));
+
+    setCards(revisedCards);
+    executeScroll();
+  };
+
+  // Render the main component
   return (
     <main className="flex min-h-full flex-col items-center justify-center bg-[#0123] text-center text-white">
-      <div className="navigation">
-        <input type="checkbox" className="navigation__checkbox" id="navi-toggle" />
-        <label htmlFor="navi-toggle" className="navigation__button">
-          <span className="navigation__icon">&nbsp;</span>
-        </label>
-        <div className="navigation__background">&nbsp;</div>
-        <nav className="navigation__nav">
-          <ul className="navigation__list">
-            <li className="navigation__item"><a href="#" className="navigation__link"><span>01</span>About Natous</a></li>
-            <li className="navigation__item"><a href="#" className="navigation__link"><span>02</span>Your benfits</a></li>
-            <li className="navigation__item"><a href="#" className="navigation__link"><span>03</span>Popular tours</a></li>
-            <li className="navigation__item"><a href="#" className="navigation__link"><span>04</span>Stories</a></li>
-            <li className="navigation__item"><a href="#" className="navigation__link"><span>05</span>Book now</a></li>
-          </ul>
-        </nav>
-      </div>
+      {/* React Compare Slider Component */}
       <ReactCompareSlider
-        changePositionOnHover={true}
-        handle={null}
-
+        changePositionOnHover
         boundsPadding={0}
-        itemOne={
-          <div className="bg-[#000] text-white flex justify-center items-end w-[100vw] h-[100vh]">
-            <Scroll
-              items={[
-                "./assets/day/0.webp",
-                "./assets/day/1.webp",
-                "./assets/day/2.webp",
-                "./assets/day/3.webp",
-                "./assets/day/4.webp",
-                "./assets/day/5.webp",
-                "./assets/day/6.webp",
-                "./assets/day/7.webp",
-                "./assets/day/8.webp",
-                "./assets/day/9.webp",
-                "./assets/day/10.webp"
-              ]}
-            />
-          </div>}
-        itemTwo={
-          <div className="bg-[#fff] text-black flex justify-center items-end w-[100vw] h-[100vh]">
-            <Scroll items={[
-              "./assets/night/0.webp",
-              "./assets/night/1.webp",
-              "./assets/night/2.webp",
-              "./assets/night/3.webp",
-              "./assets/night/4.webp",
-              "./assets/night/5.webp",
-              "./assets/night/6.webp",
-              "./assets/night/7.webp",
-              "./assets/night/8.webp",
-              "./assets/night/9.webp",
-              "./assets/night/10.webp"
-            ]}
-            />
-          </div>
-        }
+        itemOne={<CompareSliderItem theme="dark" navigationSection="dark" scrollItems="/assets/day" />}
+        itemTwo={<CompareSliderItem theme="light" navigationSection="light" scrollItems="/assets/night" />}
         keyboardIncrement="5%"
         position={50}
-        style={{
-          height: '100vh',
-          width: '100%'
-        }}
+        style={{ height: '130vh', width: '100%' }}
       />
 
-      <Cards />
-      <Footer />
+      {/* Cards Component */}
+      <Cards cards={cards} selectCard={selectCard} />
 
+      {/* Briefs Component */}
+      <Briefs reference={cardsDetailsSection} selectedCard={selectedCard} otherCards={cards.filter((card) => !card.selected)} selectCard={selectCard} />
 
+      {/* Footer Component */}
+      <Footer  />
     </main>
-  )
-}
+  );
+};
+
+// New component to avoid repetition in the ReactCompareSlider items
+const CompareSliderItem = ({ theme, navigationSection, scrollItems } : any) => (
+  <div className={`${theme === "dark" ? "bg-secondary-dark " : "bg-primary-light"} flex flex-col justify-between w-[100vw] h-[130vh] ${theme}-section relative`}>
+    <Navigation section={navigationSection} />
+    <h1 className={` text-${theme === 'dark' ? 'white' : 'black'}  text-6xl md:text-8xl font-semibold tracking-wide`}>
+      Supernatural <br />
+      ao <span className={`text-${theme === 'dark' ? 'primary-light' : 'my-green'}  font-dancing-script`}>aniotecer</span>
+    </h1>
+    <Scroll items={Array.from({ length: 11 }, (_, i) => `${scrollItems}/${i}.webp`)} />
+  </div>
+);
